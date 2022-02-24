@@ -1,0 +1,74 @@
+一、作用域
+	1. 每个执行上下文中都有outer，他指向定义的时候所在的执行上下文，outer将不同的执行上下文串联起来，形成作用域链
+	2. 词法作用域是代码编译阶段就决定好的，和函数是怎么调用的没有关系
+	3.
+二、变量声明提升
+	1. 全局的go对象处理函数和变量的区别，编译阶段查找函数名赋值为函数体，查找变量赋值为undefined，同理在（AO对象）也是如此
+	2. 预解析机制就是变量声明提升的原因
+	3. 变量声明是在函数声明之前因此函数与变量同名的时候应该输出的是函数（覆盖）
+		* alert(a) // 最后的声明为函数声明， 因此a此时为函数体
+			a(); // 执行 a 函数，输出10
+			var a = 3; // 3 赋给a
+			function a() {
+				alert(10)
+			};
+三、this
+	1. 调用全局的函数的时候，this指向的是window，this是谁调用就指向谁
+四、立即执行函数
+	1. 创建一个独立的作用域，使其内部的变量无法被外部访问
+五、typeof和instance的区别
+	1. 原理：typeof是通过机器码来进行判断的，instanceof是对原型链进行遍历
+	2. 适用类型：typeof一般来进行基本数据类型，instanceof用来判断对象类型
+	3. 存在bug：由于null的机器码全是0，因此typeof判断的时候会是object，null instanceof null 会报错
+	4. 具体类型如何获取：具体类型可以使用Object.prototype.toString.call来进行判断
+六、 bind的实现
+	1. 如果bind的时候传递参数，那么参数也绑定死了
+	2. 已经bind后的函数无法在继续bind（bind无法链式调用）
+	3. bind函数返回的函数可以作为构造函数，并且传入的this作废
+	4. 代码：
+			Function.prototype.bind2 = function (context) {
+				var self = this;
+				var args = Array.prototype.slice.call(arguments, 1);// 获取bind的的时候的参数
+				var fBound = function () {
+					var bindArgs = Array.prototype.slice.call(arguments); // 这个是本身函数传递的参数
+					return self.apply(this instanceof fBound ? this : context, args.concat(bindArgs));
+				}
+				fBound.prototype = this.prototype;
+				return fBound;
+			}
+七、call和apply
+	1. 类数组
+		* 概念：对象，key是数字且具有length属性
+		* 代码：
+			let arrayLike = {
+				0: 1,
+				1: 2,
+				2: 3,
+				length: 3
+			};
+		* 作用：改变上下文，借用方法
+八、函数柯理化
+	1.概念：将多个参数的函数转化为一系列使用一个参数的函数
+	2.代码：
+		function curry1(fn, args) {
+			var length = fn.length;
+			args = args || [];
+			return function (...arguments) {
+				args = [...args, ...arguments]
+				return args.length < length ? curry1.call(this, fn, args) : fn.apply(this, args);
+			}
+		}
+九、DOM事件
+	1. Dom0事件：
+		* 绑定：onclick
+		* 解绑：dom.onclick=null
+		* 限制：同一个事件只能绑定一个函数
+	2. Dom2事件
+		* 绑定：addeventListener
+		* 解绑：removeeventListener
+		* 限制：不能解除匿名函数的绑定
+	3. Dom3事件
+		* 扩展：在Dom2的基础上扩展了一些事件，如scroll，同时可以自定义事件
+	4. 事件流：
+		* 构成：事件冒泡和事件捕获
+		* 执行顺序：先进行捕获，后进行冒泡，事件源则看冒泡和捕获定义的向后顺序

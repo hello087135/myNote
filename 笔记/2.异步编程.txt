@@ -1,0 +1,78 @@
+一、 异步编程
+	1.  常见的宏任务
+		* 共有的：settimeout，setinterval
+		* nodejs：setinmiditaler
+		* 浏览器：requestanimationFrame
+	2.常见的微任务
+		* 共有的：promise.resolve.then
+		* nodejs：process.nextTick
+		* 浏览器：mutationObserve
+	3.setTimeout的执行顺序
+		* 按照加入工作线程时开始计时
+		* 时间相同那么会按照定义的先后来执行
+	4. requestanimationFrame和settimeout的执行顺序
+		* 前提：setTimeout的时间延迟设置的比较少
+		* 结果：不确定
+		* 原因：setTimeout是根据定义的时间开始计时的，requestanimationFrame是每秒固定60次左右，是根据浏览器的时钟信号来触发的
+	5. propmise的实现
+		* nativeCode（原生实现）
+	6. 打印一个类或者一个函数
+		* console.dir
+	7.链式调用的参数
+		* then的回调返回：
+			- reuturn 值 下一个then的入参
+			- return一个promise resolve作为then回调的参数
+		* then参数不是函数
+			- then的回调入参是一个值--->下一个then的入参
+			- then的回调不传 --->继承上一个的then的参数
+	8. 停止promise的链式调用
+		* throw Error 或者是promise的reject（都是触发catch）
+	9. promise.all
+		* 入参：数组--->每个变量都是一个promise
+		* 返回条件：所有的的promise都resolve
+		* 返回结果：then（catch）的参数，只要有reject就是最先reject的err，如果成功返回每个promise的结果数组
+	10.promise.race
+		* 入参：数组--->每个变量都是一个promise
+		* 返回条件：只要有reject或者是resolve
+		* 返回结果：最先resolve或者reject的值
+	11.生成器函数的传值
+		* yield的左边：是生成器函数的next的入参
+		* yield的右边：是next函数的返回值
+		* 代码： const a = yield Promise.resolve（）.then（）
+					  gernerate.next（）
+	12. 生成器函数的执行
+		* 如何执行：需要执行器函数，需要自己封装（co库）
+	13. async await 函数的的错误
+		* 抓取 ：可以直接trycatch或者是通过await 后的promise抓取
+		* 代码：let a=await promise.reject（）.catch（e=>e）
+	14. 宏任务和微任务
+		* 发起对象：宏任务是由宿主对象发起的，而微任务是由js发起的
+
+	15. 多个script标签的代码含有不通同的任务
+		* 代码：
+			<script>
+				Promise.resolve().then(()=>{
+					console.log(0)
+				})
+			</script>
+			<script>
+				console.log(1)
+			</script>
+		* 结果：0,1
+		* 原因：每个script标签也是一个宏任务
+
+二、提问
+	1. rusolve后面的代码是否会继续执行
+		* 结果：会执行的
+		* 代码： new Promise((resolve,reject)=>{
+					resolve(2)
+					console.dir(1)
+				}).then(res=>console.debug(res))
+	2. 在new Promise的时候不使用resolve，后面在手动p.resolve（）
+		* 原因： resolve 定义在构造函数里面，并不是一个成员方法
+		* 结果：报错，resolve is not function
+		* 代码：    let p= new Promise((resolve,reject)=>{
+						console.dir(1)
+					})
+					console.dir(p)
+					p.resolve(2).then(res=>console.log(res))

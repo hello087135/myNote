@@ -1,0 +1,8 @@
+未来一年的学习计划
+学习完node
+学习完webGL
+学习react的源码
+学习webpack的源码
+学习typeScript
+
+优先级：react>webpack>node>ts>webGL
